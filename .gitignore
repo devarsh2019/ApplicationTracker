@@ -1,0 +1,29 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Cursor / local AI tooling (do not commit)
+.cursor/
+AGENTS.md
+
+# Environment secrets
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Backend build output
+Backend/**/target/
+
+# Frontend build output
+Frontend/**/dist/
+Frontend/**/.angular/
+Frontend/**/node_modules/
+Frontend/**/coverage/
+
+# IDE
+.idea/
+*.iml
+.vscode/

@@ -1,0 +1,11 @@
+target/
+.env
+.env.local
+.idea/
+*.iml
+.DS_Store
+*.log
+
+# Maven wrapper jar is committed for offline builds
+!.mvn/wrapper/maven-wrapper.jar
+
