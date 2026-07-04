@@ -5,6 +5,7 @@ Thumbs.db
 # Cursor / local AI tooling (do not commit)
 .cursor/
 AGENTS.md
+DEPLOYMENT.md
 
 # Environment secrets
 .env
