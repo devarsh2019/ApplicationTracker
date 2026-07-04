@@ -1,0 +1,111 @@
+<section class="app-page analytics">
+  <app-app-nav />
+
+  @if (loadError()) {
+    <p class="app-error" role="alert">{{ loadError() }}</p>
+  }
+
+  <div class="app-toolbar analytics__toolbar">
+    <div>
+      <p class="app-toolbar__title">Analytics</p>
+      <p class="app-toolbar__subtitle">Totals calculated from your application records</p>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="app-loading">
+      <mat-spinner diameter="36" />
+    </div>
+  } @else if (analytics().totalApplications === 0) {
+    <div class="app-empty app-panel">
+      <mat-icon>bar_chart</mat-icon>
+      <p>No data yet — add applications to see analytics</p>
+    </div>
+  } @else {
+    <div class="app-stat-row" aria-label="Application statistics">
+      <div class="app-stat-chip">
+        <span class="app-stat-chip__value">{{ analytics().totalApplications }}</span>
+        <span class="app-stat-chip__label">Total</span>
+      </div>
+      <div class="app-stat-chip">
+        <span class="app-stat-chip__value">{{ analytics().activeDays }}</span>
+        <span class="app-stat-chip__label">Active days</span>
+      </div>
+      <div class="app-stat-chip">
+        <span class="app-stat-chip__value">{{ analytics().averagePerActiveDay | number: '1.0-1' }}</span>
+        <span class="app-stat-chip__label">Avg / day</span>
+      </div>
+      <div class="app-stat-chip">
+        <span class="app-stat-chip__value">{{ analytics().last7DaysCount }}</span>
+        <span class="app-stat-chip__label">Last 7 days</span>
+      </div>
+      <div class="app-stat-chip">
+        <span class="app-stat-chip__value">{{ analytics().last30DaysCount }}</span>
+        <span class="app-stat-chip__label">Last 30 days</span>
+      </div>
+      <div class="app-stat-chip">
+        <span class="app-stat-chip__value analytics__busiest">
+          @if (analytics().busiestDay) {
+            {{ analytics().busiestDay!.count }}
+          } @else {
+            —
+          }
+        </span>
+        <span class="app-stat-chip__label">
+          @if (analytics().busiestDay) {
+            Busiest · {{ analytics().busiestDay!.appliedDate | date: 'MMM d' }}
+          } @else {
+            Busiest day
+          }
+        </span>
+      </div>
+    </div>
+
+    <div class="app-content analytics__charts">
+      <section class="app-panel analytics__donut-panel">
+        <h2 class="app-section-title">By status</h2>
+        <div class="analytics__donut-wrap">
+          <div
+            class="analytics__donut"
+            role="img"
+            aria-label="Donut chart of applications by status"
+            [style.background]="analytics().donutGradient"
+          >
+            <div class="analytics__donut-hole">
+              <span class="analytics__donut-total">{{ analytics().totalApplications }}</span>
+              <span class="analytics__donut-label">total</span>
+            </div>
+          </div>
+          <ul class="analytics__legend">
+            @for (segment of analytics().statusSegments; track segment.status) {
+              <li>
+                <span class="analytics__legend-dot" [style.background]="segment.color"></span>
+                <span class="analytics__legend-text">{{ segment.label }}</span>
+                <span class="analytics__legend-value">{{ segment.count }} · {{ segment.percent | number: '1.0-0' }}%</span>
+              </li>
+            }
+          </ul>
+        </div>
+      </section>
+
+      <section class="app-panel analytics__timeline-panel">
+        <h2 class="app-section-title">By date</h2>
+        <div class="analytics__timeline" role="list" aria-label="Applications per date">
+          @for (bar of analytics().chartBars; track bar.appliedDate) {
+            <div class="analytics__timeline-row" role="listitem">
+              <span class="analytics__timeline-date">{{ bar.appliedDate | date: 'MMM d' }}</span>
+              <div class="analytics__timeline-track">
+                <div
+                  class="analytics__timeline-bar"
+                  [style.width.%]="bar.widthPercent"
+                  [attr.aria-label]="bar.count + ' applications'"
+                ></div>
+              </div>
+              <span class="analytics__timeline-count">{{ bar.count }}</span>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+  }
+</section>

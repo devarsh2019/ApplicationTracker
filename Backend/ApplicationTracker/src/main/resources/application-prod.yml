@@ -1,0 +1,12 @@
+app:
+  seed-demo-user: false
+
+logging:
+  level:
+    com.applicationtracker: WARN
+    org.springframework.web: WARN
+
+management:
+  endpoint:
+    health:
+      show-details: never

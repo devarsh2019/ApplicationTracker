@@ -1,0 +1,197 @@
+.dashboard__controls {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 60%, transparent);
+  border-radius: 0.75rem;
+  background: var(--mat-sys-surface-container-lowest);
+}
+
+.dashboard__controls-left,
+.dashboard__controls-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dashboard__controls-left {
+  flex-shrink: 0;
+}
+
+.dashboard__controls-right {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.dashboard__stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding-right: 0.25rem;
+}
+
+.dashboard__stat-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.dashboard__stat-label {
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.dashboard__date-stepper {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.dashboard__date-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 100%;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--mat-sys-primary) 25%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mat-sys-primary) 8%, var(--mat-sys-surface-container-lowest));
+  color: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dashboard__date-pill mat-icon {
+  width: 1rem;
+  height: 1rem;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.dashboard__date-count {
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.dashboard__date-input-hidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dashboard__quick-jump {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  padding-bottom: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.dashboard__jump-chip {
+  flex-shrink: 0;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 70%, transparent);
+  border-radius: 999px;
+  background: var(--mat-sys-surface-container-lowest);
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.dashboard__jump-chip.is-active {
+  border-color: var(--mat-sys-primary);
+  background: color-mix(in srgb, var(--mat-sys-primary) 12%, var(--mat-sys-surface-container-lowest));
+  color: var(--mat-sys-primary);
+  font-weight: 600;
+}
+
+.dashboard__table-card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  margin-top: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 60%, transparent);
+  border-radius: 0.75rem 0.75rem 0 0;
+  background: var(--mat-sys-surface-container-lowest);
+  overflow: hidden;
+}
+
+.dashboard__table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.dashboard__table {
+  width: 100%;
+}
+
+.dashboard__table .mat-mdc-header-cell {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mat-sys-on-surface-variant);
+  background: var(--mat-sys-surface-container);
+}
+
+.dashboard__table .mat-mdc-cell,
+.dashboard__table .mat-mdc-header-cell {
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem;
+}
+
+.dashboard__muted {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.dashboard__cell-text {
+  display: inline-block;
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  vertical-align: bottom;
+}
+
+.mat-mdc-paginator {
+  flex-shrink: 0;
+  border-top: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 50%, transparent);
+}
+
+@media (max-width: 768px) {
+  .dashboard__controls {
+    flex-wrap: wrap;
+  }
+
+  .dashboard__controls-right {
+    margin-left: 0;
+  }
+
+  .dashboard__date-stepper {
+    order: 3;
+    flex-basis: 100%;
+  }
+}

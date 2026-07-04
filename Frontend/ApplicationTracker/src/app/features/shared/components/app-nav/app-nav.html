@@ -1,0 +1,24 @@
+<header class="app-nav">
+  <div class="app-nav__brand">
+    <h1>Hi, {{ userName() }}</h1>
+  </div>
+
+  <nav class="app-nav__links" aria-label="Main navigation">
+    <a mat-stroked-button routerLink="/dashboard" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }">
+      <mat-icon>table_rows</mat-icon>
+      <span>Applications</span>
+    </a>
+    <a mat-stroked-button routerLink="/analytics" routerLinkActive="is-active">
+      <mat-icon>bar_chart</mat-icon>
+      <span>Analytics</span>
+    </a>
+  </nav>
+
+  <div class="app-nav__actions">
+    <app-theme-toggle />
+    <button mat-stroked-button type="button" class="app-nav__sign-out" (click)="signOut()">
+      <mat-icon>logout</mat-icon>
+      <span>Sign out</span>
+    </button>
+  </div>
+</header>

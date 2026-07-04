@@ -14,6 +14,12 @@ export const routes: Routes = [
     title: 'Dashboard · Application Tracker',
   },
   {
+    path: 'analytics',
+    loadComponent: () => import('./features/analytics/analytics').then((m) => m.Analytics),
+    canActivate: [authGuard],
+    title: 'Analytics · Application Tracker',
+  },
+  {
     path: '',
     redirectTo: 'auth/login',
     pathMatch: 'full',
