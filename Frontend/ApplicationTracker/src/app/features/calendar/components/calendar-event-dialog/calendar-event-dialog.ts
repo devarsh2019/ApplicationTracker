@@ -8,6 +8,11 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import {
+  MatTimepicker,
+  MatTimepickerInput,
+  MatTimepickerToggle,
+} from '@angular/material/timepicker';
 import { provideNativeDateAdapter } from '@angular/material/core';
 
 import { ApplicationService } from '../../../applications/services/application.service';
@@ -16,7 +21,12 @@ import {
   CalendarEvent,
   CalendarEventPayload,
 } from '../../models/calendar.models';
-import { localDateTimeInputToIso, toLocalDateTimeInput } from '../../utils/calendar.utils';
+import {
+  combineDateAndTime,
+  parseIsoDateTime,
+  startOfDayDate,
+  toLocalDateTimeIso,
+} from '../../utils/calendar.utils';
 
 export interface CalendarEventDialogData {
   mode: 'create' | 'edit';
@@ -36,6 +46,9 @@ export interface CalendarEventDialogData {
     MatButtonModule,
     MatCheckboxModule,
     MatDatepickerModule,
+    MatTimepicker,
+    MatTimepickerInput,
+    MatTimepickerToggle,
   ],
   templateUrl: './calendar-event-dialog.html',
   styleUrl: './calendar-event-dialog.scss',
@@ -51,15 +64,22 @@ export class CalendarEventDialog {
     { initialValue: null },
   );
 
-  protected readonly form = this.fb.nonNullable.group({
+  protected readonly form = this.fb.group({
     title: [this.data.event?.title ?? '', [Validators.required, Validators.maxLength(200)]],
     eventType: [this.data.event?.eventType ?? 'INTERVIEW', Validators.required],
     allDay: [this.data.event?.allDay ?? false],
-    startsAt: [this.initialStartsAt(), Validators.required],
-    endsAt: [this.initialEndsAt()],
+    startDate: [this.initialStartDate(), Validators.required],
+    startTime: [this.initialStartTime(), Validators.required],
+    endDate: [this.initialEndDate()],
+    endTime: [this.initialEndTime()],
     notes: [this.data.event?.notes ?? '', Validators.maxLength(2000)],
     applicationId: [this.data.event?.applicationId ?? ''],
   });
+
+  constructor() {
+    this.syncTimeFields(this.form.controls.allDay.value ?? false);
+    this.form.controls.allDay.valueChanges.subscribe((allDay) => this.syncTimeFields(allDay ?? false));
+  }
 
   protected get title(): string {
     return this.data.mode === 'create' ? 'Add event' : 'Edit event';
@@ -73,35 +93,115 @@ export class CalendarEventDialog {
 
     const value = this.form.getRawValue();
     const payload: CalendarEventPayload = {
-      title: value.title.trim(),
-      notes: value.notes.trim() || null,
-      startsAt: localDateTimeInputToIso(value.startsAt),
-      endsAt: value.endsAt ? localDateTimeInputToIso(value.endsAt) : null,
-      allDay: value.allDay,
-      eventType: value.eventType,
+      title: (value.title ?? '').trim(),
+      notes: (value.notes ?? '').trim() || null,
+      startsAt: this.buildStartsAt(value),
+      endsAt: this.buildEndsAt(value),
+      allDay: value.allDay ?? false,
+      eventType: value.eventType ?? 'OTHER',
       applicationId: value.applicationId || null,
     };
 
     this.dialogRef.close(payload);
   }
 
-  private initialStartsAt(): string {
+  private buildStartsAt(value: {
+    allDay: boolean | null;
+    startDate: Date | null;
+    startTime: Date | null;
+  }): string {
+    if (!value.startDate) {
+      throw new Error('Start date is required.');
+    }
+
+    if (value.allDay) {
+      return toLocalDateTimeIso(startOfDayDate(value.startDate));
+    }
+
+    if (!value.startTime) {
+      throw new Error('Start time is required.');
+    }
+
+    return toLocalDateTimeIso(combineDateAndTime(value.startDate, value.startTime));
+  }
+
+  private buildEndsAt(value: {
+    allDay: boolean | null;
+    endDate: Date | null;
+    endTime: Date | null;
+  }): string | null {
+    if (!value.endDate) {
+      return null;
+    }
+
+    if (value.allDay) {
+      const end = startOfDayDate(value.endDate);
+      end.setHours(23, 59, 59, 0);
+      return toLocalDateTimeIso(end);
+    }
+
+    if (!value.endTime) {
+      return null;
+    }
+
+    return toLocalDateTimeIso(combineDateAndTime(value.endDate, value.endTime));
+  }
+
+  private syncTimeFields(allDay: boolean): void {
+    const startTime = this.form.controls.startTime;
+    const endTime = this.form.controls.endTime;
+
+    if (allDay) {
+      startTime.clearValidators();
+      endTime.clearValidators();
+      startTime.disable({ emitEvent: false });
+      endTime.disable({ emitEvent: false });
+    } else {
+      startTime.setValidators([Validators.required]);
+      endTime.clearValidators();
+      startTime.enable({ emitEvent: false });
+      endTime.enable({ emitEvent: false });
+    }
+
+    startTime.updateValueAndValidity({ emitEvent: false });
+    endTime.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private initialStartDate(): Date {
     if (this.data.event) {
-      return toLocalDateTimeInput(this.data.event.startsAt);
+      return parseIsoDateTime(this.data.event.startsAt).date;
     }
 
     if (this.data.prefillDate) {
-      return `${this.data.prefillDate}T09:00`;
+      return startOfDayDate(this.data.prefillDate);
     }
 
-    return toLocalDateTimeInput(new Date());
+    return startOfDayDate(new Date());
   }
 
-  private initialEndsAt(): string {
-    if (this.data.event?.endsAt) {
-      return toLocalDateTimeInput(this.data.event.endsAt);
+  private initialStartTime(): Date {
+    if (this.data.event && !this.data.event.allDay) {
+      return parseIsoDateTime(this.data.event.startsAt).time;
     }
 
-    return '';
+    const time = new Date();
+    time.setHours(9, 0, 0, 0);
+    return time;
+  }
+
+  private initialEndDate(): Date | null {
+    if (this.data.event?.endsAt) {
+      return parseIsoDateTime(this.data.event.endsAt).date;
+    }
+
+    return null;
+  }
+
+  private initialEndTime(): Date | null {
+    if (this.data.event?.endsAt && !this.data.event.allDay) {
+      return parseIsoDateTime(this.data.event.endsAt).time;
+    }
+
+    return null;
   }
 }

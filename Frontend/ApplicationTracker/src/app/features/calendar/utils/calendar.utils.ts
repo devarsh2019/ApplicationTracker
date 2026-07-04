@@ -89,6 +89,39 @@ export function formatIsoDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export function combineDateAndTime(date: Date, time: Date): Date {
+  const result = new Date(date);
+  result.setHours(time.getHours(), time.getMinutes(), 0, 0);
+  return result;
+}
+
+export function toLocalDateTimeIso(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+}
+
+export function parseIsoDateTime(value: string): { date: Date; time: Date } {
+  const parsed = new Date(value.includes('T') ? value : `${value}T00:00:00`);
+  const date = new Date(parsed);
+  date.setHours(0, 0, 0, 0);
+
+  const time = new Date(parsed);
+  time.setSeconds(0, 0);
+
+  return { date, time };
+}
+
+export function startOfDayDate(value?: string | Date): Date {
+  const date = value instanceof Date ? new Date(value) : new Date(value ? `${value.slice(0, 10)}T00:00:00` : Date.now());
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
 export function toLocalDateTimeInput(value: string | Date): string {
   const date = value instanceof Date ? value : new Date(value);
   const year = date.getFullYear();

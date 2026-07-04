@@ -17,15 +17,49 @@
 
   <mat-checkbox formControlName="allDay">All day</mat-checkbox>
 
-  <mat-form-field appearance="outline">
-    <mat-label>Starts</mat-label>
-    <input matInput type="datetime-local" formControlName="startsAt" />
-  </mat-form-field>
+  <div class="calendar-event-dialog__schedule">
+    <div class="calendar-event-dialog__schedule-block">
+      <p class="calendar-event-dialog__schedule-label">Starts</p>
+      <div class="calendar-event-dialog__schedule-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Date</mat-label>
+          <input matInput [matDatepicker]="startDatePicker" formControlName="startDate" />
+          <mat-datepicker-toggle matIconSuffix [for]="startDatePicker" />
+          <mat-datepicker #startDatePicker />
+        </mat-form-field>
 
-  <mat-form-field appearance="outline">
-    <mat-label>Ends (optional)</mat-label>
-    <input matInput type="datetime-local" formControlName="endsAt" />
-  </mat-form-field>
+        @if (!form.controls.allDay.value) {
+          <mat-form-field appearance="outline">
+            <mat-label>Time</mat-label>
+            <input matInput [matTimepicker]="startTimePicker" formControlName="startTime" />
+            <mat-timepicker-toggle matIconSuffix [for]="startTimePicker" />
+            <mat-timepicker #startTimePicker interval="15m" />
+          </mat-form-field>
+        }
+      </div>
+    </div>
+
+    <div class="calendar-event-dialog__schedule-block">
+      <p class="calendar-event-dialog__schedule-label">Ends (optional)</p>
+      <div class="calendar-event-dialog__schedule-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Date</mat-label>
+          <input matInput [matDatepicker]="endDatePicker" formControlName="endDate" />
+          <mat-datepicker-toggle matIconSuffix [for]="endDatePicker" />
+          <mat-datepicker #endDatePicker />
+        </mat-form-field>
+
+        @if (!form.controls.allDay.value) {
+          <mat-form-field appearance="outline">
+            <mat-label>Time</mat-label>
+            <input matInput [matTimepicker]="endTimePicker" formControlName="endTime" />
+            <mat-timepicker-toggle matIconSuffix [for]="endTimePicker" />
+            <mat-timepicker #endTimePicker interval="15m" />
+          </mat-form-field>
+        }
+      </div>
+    </div>
+  </div>
 
   <mat-form-field appearance="outline">
     <mat-label>Notes</mat-label>
