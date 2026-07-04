@@ -22,10 +22,10 @@ import {
   CalendarEventPayload,
 } from '../../models/calendar.models';
 import {
-  combineDateAndTime,
+  buildEventEndsAt,
+  buildEventStartsAt,
   parseIsoDateTime,
   startOfDayDate,
-  toLocalDateTimeIso,
 } from '../../utils/calendar.utils';
 
 export interface CalendarEventDialogData {
@@ -95,56 +95,22 @@ export class CalendarEventDialog {
     const payload: CalendarEventPayload = {
       title: (value.title ?? '').trim(),
       notes: (value.notes ?? '').trim() || null,
-      startsAt: this.buildStartsAt(value),
-      endsAt: this.buildEndsAt(value),
+      startsAt: buildEventStartsAt({
+        allDay: value.allDay ?? false,
+        startDate: value.startDate,
+        startTime: value.startTime,
+      }),
+      endsAt: buildEventEndsAt({
+        allDay: value.allDay ?? false,
+        endDate: value.endDate,
+        endTime: value.endTime,
+      }),
       allDay: value.allDay ?? false,
       eventType: value.eventType ?? 'OTHER',
       applicationId: value.applicationId || null,
     };
 
     this.dialogRef.close(payload);
-  }
-
-  private buildStartsAt(value: {
-    allDay: boolean | null;
-    startDate: Date | null;
-    startTime: Date | null;
-  }): string {
-    if (!value.startDate) {
-      throw new Error('Start date is required.');
-    }
-
-    if (value.allDay) {
-      return toLocalDateTimeIso(startOfDayDate(value.startDate));
-    }
-
-    if (!value.startTime) {
-      throw new Error('Start time is required.');
-    }
-
-    return toLocalDateTimeIso(combineDateAndTime(value.startDate, value.startTime));
-  }
-
-  private buildEndsAt(value: {
-    allDay: boolean | null;
-    endDate: Date | null;
-    endTime: Date | null;
-  }): string | null {
-    if (!value.endDate) {
-      return null;
-    }
-
-    if (value.allDay) {
-      const end = startOfDayDate(value.endDate);
-      end.setHours(23, 59, 59, 0);
-      return toLocalDateTimeIso(end);
-    }
-
-    if (!value.endTime) {
-      return null;
-    }
-
-    return toLocalDateTimeIso(combineDateAndTime(value.endDate, value.endTime));
   }
 
   private syncTimeFields(allDay: boolean): void {

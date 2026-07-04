@@ -185,6 +185,135 @@ class ApplicationIntegrationTest {
         assertThat(result.getResponse().getStatus()).isEqualTo(429);
     }
 
+    @Test
+    @Order(4)
+    void calendarEventEdgeCases() throws Exception {
+        String email = "calendartest@applicationtracker.com";
+        String accessToken = registerAndLogin(email);
+
+        mockMvc.perform(get("/api/calendar/events")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .param("from", "2026-08-01")
+                        .param("to", "2026-07-01"))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(get("/api/calendar/events")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .param("from", "2026-08-01")
+                        .param("to", "2026-08-31"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+
+        MvcResult allDayResult = mockMvc.perform(post("/api/calendar/events")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title": "Apply to jobs",
+                                  "notes": "Batch apply Monday",
+                                  "startsAt": "2026-07-07T15:30:00",
+                                  "endsAt": "2026-07-07T18:00:00",
+                                  "allDay": true,
+                                  "eventType": "TASK",
+                                  "applicationId": null
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.allDay").value(true))
+                .andExpect(jsonPath("$.startsAt").value("2026-07-07T00:00:00"))
+                .andExpect(jsonPath("$.endsAt").value("2026-07-07T23:59:59"))
+                .andReturn();
+
+        String allDayEventId = objectMapper
+                .readTree(allDayResult.getResponse().getContentAsString())
+                .get("id")
+                .asText();
+
+        mockMvc.perform(post("/api/calendar/events")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title": "Invalid range",
+                                  "startsAt": "2026-07-08T11:00:00",
+                                  "endsAt": "2026-07-08T10:00:00",
+                                  "allDay": false,
+                                  "eventType": "REMINDER",
+                                  "applicationId": null
+                                }
+                                """))
+                .andExpect(status().isBadRequest());
+
+        MvcResult timedResult = mockMvc.perform(post("/api/calendar/events")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title": "Recruiter call",
+                                  "startsAt": "2026-07-09T09:00:00",
+                                  "endsAt": "2026-07-09T09:30:00",
+                                  "allDay": false,
+                                  "eventType": "INTERVIEW",
+                                  "applicationId": null
+                                }
+                                """))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String timedEventId = objectMapper
+                .readTree(timedResult.getResponse().getContentAsString())
+                .get("id")
+                .asText();
+
+        mockMvc.perform(put("/api/calendar/events/" + timedEventId)
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title": "Recruiter call (rescheduled)",
+                                  "startsAt": "2026-07-09T14:00:00",
+                                  "endsAt": "2026-07-09T14:45:00",
+                                  "allDay": false,
+                                  "eventType": "INTERVIEW",
+                                  "applicationId": null
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Recruiter call (rescheduled)"))
+                .andExpect(jsonPath("$.startsAt").value("2026-07-09T14:00:00"));
+
+        mockMvc.perform(post("/api/calendar/events")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title": "Broken link",
+                                  "startsAt": "2026-07-10T10:00:00",
+                                  "allDay": false,
+                                  "eventType": "OTHER",
+                                  "applicationId": "00000000-0000-0000-0000-000000000001"
+                                }
+                                """))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/api/calendar/events")
+                        .param("from", "2026-07-01")
+                        .param("to", "2026-07-31"))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(delete("/api/calendar/events/" + allDayEventId)
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(delete("/api/calendar/events/" + timedEventId)
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(delete("/api/calendar/events/" + timedEventId)
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNotFound());
+    }
+
     private String registerAndLogin(String email) throws Exception {
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

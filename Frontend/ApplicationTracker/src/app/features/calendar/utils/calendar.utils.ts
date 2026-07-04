@@ -122,6 +122,48 @@ export function startOfDayDate(value?: string | Date): Date {
   return date;
 }
 
+export interface EventScheduleInput {
+  allDay: boolean;
+  startDate: Date | null;
+  startTime: Date | null;
+  endDate: Date | null;
+  endTime: Date | null;
+}
+
+export function buildEventStartsAt(value: Pick<EventScheduleInput, 'allDay' | 'startDate' | 'startTime'>): string {
+  if (!value.startDate) {
+    throw new Error('Start date is required.');
+  }
+
+  if (value.allDay) {
+    return toLocalDateTimeIso(startOfDayDate(value.startDate));
+  }
+
+  if (!value.startTime) {
+    throw new Error('Start time is required.');
+  }
+
+  return toLocalDateTimeIso(combineDateAndTime(value.startDate, value.startTime));
+}
+
+export function buildEventEndsAt(value: Pick<EventScheduleInput, 'allDay' | 'endDate' | 'endTime'>): string | null {
+  if (!value.endDate) {
+    return null;
+  }
+
+  if (value.allDay) {
+    const end = startOfDayDate(value.endDate);
+    end.setHours(23, 59, 59, 0);
+    return toLocalDateTimeIso(end);
+  }
+
+  if (!value.endTime) {
+    return null;
+  }
+
+  return toLocalDateTimeIso(combineDateAndTime(value.endDate, value.endTime));
+}
+
 export function toLocalDateTimeInput(value: string | Date): string {
   const date = value instanceof Date ? value : new Date(value);
   const year = date.getFullYear();
