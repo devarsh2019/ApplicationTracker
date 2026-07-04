@@ -1,0 +1,131 @@
+<section class="app-page calendar">
+  <app-app-nav />
+
+  @if (actionError()) {
+    <p class="app-error" role="alert">{{ actionError() }}</p>
+  }
+
+  <div class="calendar__toolbar app-toolbar">
+    <div class="calendar__toolbar-left">
+      <p class="app-toolbar__title">Calendar</p>
+      <p class="app-toolbar__subtitle">Interviews, reminders, and tasks</p>
+    </div>
+
+    <div class="calendar__toolbar-actions">
+      <button mat-stroked-button type="button" (click)="goToToday()">Today</button>
+      <button mat-flat-button color="primary" type="button" (click)="openCreateDialog()">
+        <mat-icon>add</mat-icon>
+        Add event
+      </button>
+    </div>
+  </div>
+
+  <div class="calendar__content">
+    <section class="app-panel calendar__month-panel">
+      <div class="calendar__month-header">
+        <button mat-icon-button type="button" aria-label="Previous month" (click)="goToPreviousMonth()">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <h2>{{ monthLabel() }}</h2>
+        <button mat-icon-button type="button" aria-label="Next month" (click)="goToNextMonth()">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+
+      <div class="calendar__weekdays" aria-hidden="true">
+        @for (label of weekdayLabels; track label) {
+          <span>{{ label }}</span>
+        }
+      </div>
+
+      @if (isLoading()) {
+        <div class="app-loading">
+          <mat-spinner diameter="32" />
+        </div>
+      } @else {
+        <div class="calendar__grid" role="grid" aria-label="Month calendar">
+          @for (week of monthGrid().weeks; track $index) {
+            @for (day of week; track day.isoDate) {
+              <button
+                type="button"
+                class="calendar__day"
+                role="gridcell"
+                [class.is-other-month]="!day.inCurrentMonth"
+                [class.is-today]="day.isToday"
+                [class.is-selected]="day.isSelected"
+                [attr.aria-label]="day.date | date: 'fullDate'"
+                [attr.aria-pressed]="day.isSelected"
+                (click)="selectDay(day.isoDate)"
+              >
+                <span class="calendar__day-number">{{ day.date.getDate() }}</span>
+                @if (day.eventCount > 0) {
+                  <span class="calendar__day-dots" aria-hidden="true">
+                    @for (type of day.eventTypes.slice(0, 3); track type) {
+                      <span class="calendar__day-dot" [style.background]="eventColors[type]"></span>
+                    }
+                  </span>
+                }
+              </button>
+            }
+          }
+        </div>
+      }
+    </section>
+
+    <section class="app-panel calendar__agenda-panel">
+      <div class="calendar__agenda-header">
+        <h2 class="app-section-title">{{ selectedDate() | date: 'EEEE, MMM d' }}</h2>
+        <span class="calendar__agenda-count">{{ selectedDayEvents().length }} events</span>
+      </div>
+
+      @if (selectedDayEvents().length === 0) {
+        <div class="calendar__agenda-empty">
+          <mat-icon>event_available</mat-icon>
+          <p>No events — add an interview, reminder, or task</p>
+          <button mat-stroked-button type="button" (click)="openCreateDialog()">Add event</button>
+        </div>
+      } @else {
+        <ul class="calendar__agenda-list">
+          @for (event of selectedDayEvents(); track event.id) {
+            <li class="calendar__agenda-item">
+              <span class="calendar__agenda-marker" [style.background]="eventColors[event.eventType]"></span>
+              <div class="calendar__agenda-body">
+                <div class="calendar__agenda-top">
+                  <strong>{{ event.title }}</strong>
+                  <span class="calendar__agenda-time">{{ formatEventTime(event) }}</span>
+                </div>
+                <p class="calendar__agenda-type">{{ event.eventType | lowercase }}</p>
+                @if (event.applicationCompanyName) {
+                  <p class="calendar__agenda-link">{{ event.applicationCompanyName }}</p>
+                }
+                @if (event.notes) {
+                  <p class="calendar__agenda-notes">{{ event.notes }}</p>
+                }
+              </div>
+              <div class="calendar__agenda-actions">
+                <button
+                  mat-icon-button
+                  type="button"
+                  aria-label="Edit event"
+                  matTooltip="Edit"
+                  (click)="openEditDialog(event)"
+                >
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  type="button"
+                  aria-label="Delete event"
+                  matTooltip="Delete"
+                  (click)="deleteEvent(event)"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  </div>
+</section>

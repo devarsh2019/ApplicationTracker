@@ -110,6 +110,39 @@ class ApplicationIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[?(@.status == 'NEXT_STAGE')].count").value(1));
 
+        MvcResult calendarResult = mockMvc.perform(post("/api/calendar/events")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "title": "Phone screen",
+                                  "notes": "Prepare STAR stories",
+                                  "startsAt": "2026-07-05T10:00:00",
+                                  "endsAt": "2026-07-05T11:00:00",
+                                  "allDay": false,
+                                  "eventType": "INTERVIEW",
+                                  "applicationId": "%s"
+                                }
+                                """.formatted(applicationId)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.title").value("Phone screen"))
+                .andExpect(jsonPath("$.eventType").value("INTERVIEW"))
+                .andReturn();
+
+        JsonNode calendarBody = objectMapper.readTree(calendarResult.getResponse().getContentAsString());
+        String eventId = calendarBody.get("id").asText();
+
+        mockMvc.perform(get("/api/calendar/events")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .param("from", "2026-07-01")
+                        .param("to", "2026-07-31"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.title == 'Phone screen')].eventType").value("INTERVIEW"));
+
+        mockMvc.perform(delete("/api/calendar/events/" + eventId)
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNoContent());
+
         mockMvc.perform(delete("/api/applications/" + applicationId)
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isNoContent());

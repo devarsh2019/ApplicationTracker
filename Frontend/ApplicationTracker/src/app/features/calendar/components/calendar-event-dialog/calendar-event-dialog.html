@@ -1,0 +1,51 @@
+<h2 mat-dialog-title>{{ title }}</h2>
+
+<form mat-dialog-content [formGroup]="form" (ngSubmit)="submit()">
+  <mat-form-field appearance="outline">
+    <mat-label>Title</mat-label>
+    <input matInput formControlName="title" autocomplete="off" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Type</mat-label>
+    <mat-select formControlName="eventType">
+      @for (option of eventTypeOptions; track option.value) {
+        <mat-option [value]="option.value">{{ option.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-checkbox formControlName="allDay">All day</mat-checkbox>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Starts</mat-label>
+    <input matInput type="datetime-local" formControlName="startsAt" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Ends (optional)</mat-label>
+    <input matInput type="datetime-local" formControlName="endsAt" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Notes</mat-label>
+    <textarea matInput rows="3" formControlName="notes"></textarea>
+  </mat-form-field>
+
+  @if (applicationOptions(); as appPage) {
+    <mat-form-field appearance="outline">
+      <mat-label>Link application (optional)</mat-label>
+      <mat-select formControlName="applicationId">
+        <mat-option value="">None</mat-option>
+        @for (app of appPage.content; track app.id) {
+          <mat-option [value]="app.id">{{ app.companyName }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  }
+</form>
+
+<div mat-dialog-actions align="end">
+  <button mat-button type="button" mat-dialog-close>Cancel</button>
+  <button mat-flat-button color="primary" type="button" (click)="submit()">Save</button>
+</div>

@@ -1,0 +1,19 @@
+:host {
+  display: block;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: min(22rem, 90vw);
+  padding-top: 0.25rem;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+mat-checkbox {
+  margin: 0.25rem 0 0.5rem;
+}
