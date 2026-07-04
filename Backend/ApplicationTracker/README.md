@@ -60,8 +60,7 @@ API base URL: `http://localhost:8080`
 | GET | `/api/auth/me` | Bearer token |
 | POST | `/api/auth/refresh` | Public |
 | POST | `/api/auth/logout` | Bearer token |
-| POST | `/api/auth/forgot-password` | Public |
-| POST | `/api/auth/reset-password` | Public |
+| POST | `/api/auth/forgot-password` | Public — updates password by email |
 
 ## Demo user
 
@@ -70,4 +69,4 @@ On first startup, a demo account is seeded:
 - Email: `demo@applicationtracker.com`
 - Password: `Password123`
 
-Password reset tokens are logged to the console in development (email service not wired yet).
+Password reset updates the password directly when a valid account email is provided.

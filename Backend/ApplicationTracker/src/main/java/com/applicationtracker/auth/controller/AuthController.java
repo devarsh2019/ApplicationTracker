@@ -6,7 +6,6 @@ import com.applicationtracker.auth.dto.LoginRequest;
 import com.applicationtracker.auth.dto.MessageResponse;
 import com.applicationtracker.auth.dto.RefreshTokenRequest;
 import com.applicationtracker.auth.dto.RegisterRequest;
-import com.applicationtracker.auth.dto.ResetPasswordRequest;
 import com.applicationtracker.auth.dto.TokenResponse;
 import com.applicationtracker.auth.dto.UserResponse;
 import com.applicationtracker.auth.security.AuthenticatedUser;
@@ -64,10 +63,5 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public MessageResponse forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         return authService.forgotPassword(request);
-    }
-
-    @PostMapping("/reset-password")
-    public MessageResponse resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        return authService.resetPassword(request);
     }
 }

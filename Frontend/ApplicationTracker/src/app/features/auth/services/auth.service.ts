@@ -9,6 +9,7 @@ import {
   AuthSession,
   AuthUser,
   LoginCredentials,
+  MessageResponse,
   RegisterCredentials,
   TokenResponse,
 } from '../models/auth.models';
@@ -79,6 +80,12 @@ export class AuthService {
     return this.tokenStorage.getAccessToken() !== null;
   }
 
+  forgotPassword(email: string, newPassword: string): Observable<MessageResponse> {
+    return this.http
+      .post<MessageResponse>(`${this.baseUrl}/forgot-password`, { email, newPassword })
+      .pipe(catchError((error) => throwError(() => this.toError(error))));
+  }
+
   private toSession(response: AuthResponse): AuthSession {
     return {
       accessToken: response.accessToken,
@@ -90,7 +97,19 @@ export class AuthService {
 
   private toError(error: unknown): Error {
     if (error instanceof HttpErrorResponse) {
+      if (error.status === 0) {
+        return new Error('Unable to reach the server. Please check your connection and try again.');
+      }
+
       const apiError = error.error as ApiError | null;
+
+      if (apiError?.errors) {
+        const firstFieldError = Object.values(apiError.errors)[0];
+        if (firstFieldError) {
+          return new Error(firstFieldError);
+        }
+      }
+
       return new Error(apiError?.message ?? 'Something went wrong. Please try again.');
     }
 

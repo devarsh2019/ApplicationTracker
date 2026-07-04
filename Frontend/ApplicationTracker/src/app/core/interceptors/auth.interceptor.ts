@@ -16,7 +16,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status !== 401 || req.url.includes('/auth/login') || req.url.includes('/auth/register')) {
+      if (
+        error.status !== 401 ||
+        req.url.includes('/auth/login') ||
+        req.url.includes('/auth/register') ||
+        req.url.includes('/auth/forgot-password')
+      ) {
         return throwError(() => error);
       }
 

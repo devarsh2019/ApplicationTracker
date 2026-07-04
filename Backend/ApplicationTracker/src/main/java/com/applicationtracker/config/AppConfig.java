@@ -6,8 +6,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableConfigurationProperties({
         JwtProperties.class,
-        CorsProperties.class,
-        PasswordResetProperties.class
+        CorsProperties.class
 })
 public class AppConfig {
 }

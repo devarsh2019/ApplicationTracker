@@ -6,24 +6,18 @@ import com.applicationtracker.auth.dto.LoginRequest;
 import com.applicationtracker.auth.dto.MessageResponse;
 import com.applicationtracker.auth.dto.RefreshTokenRequest;
 import com.applicationtracker.auth.dto.RegisterRequest;
-import com.applicationtracker.auth.dto.ResetPasswordRequest;
 import com.applicationtracker.auth.dto.TokenResponse;
 import com.applicationtracker.auth.dto.UserResponse;
-import com.applicationtracker.auth.entity.PasswordResetToken;
 import com.applicationtracker.auth.entity.RefreshToken;
 import com.applicationtracker.auth.entity.User;
-import com.applicationtracker.auth.repository.PasswordResetTokenRepository;
 import com.applicationtracker.auth.repository.RefreshTokenRepository;
 import com.applicationtracker.auth.repository.UserRepository;
 import com.applicationtracker.auth.security.AuthenticatedUser;
 import com.applicationtracker.auth.security.JwtService;
 import com.applicationtracker.config.JwtProperties;
-import com.applicationtracker.config.PasswordResetProperties;
-import com.applicationtracker.exception.BadRequestException;
 import com.applicationtracker.exception.ConflictException;
+import com.applicationtracker.exception.NotFoundException;
 import com.applicationtracker.exception.UnauthorizedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,32 +28,24 @@ import java.util.UUID;
 @Service
 public class AuthService {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
-
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
-    private final PasswordResetProperties passwordResetProperties;
 
     public AuthService(
             UserRepository userRepository,
             RefreshTokenRepository refreshTokenRepository,
-            PasswordResetTokenRepository passwordResetTokenRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            JwtProperties jwtProperties,
-            PasswordResetProperties passwordResetProperties
+            JwtProperties jwtProperties
     ) {
         this.userRepository = userRepository;
         this.refreshTokenRepository = refreshTokenRepository;
-        this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.jwtProperties = jwtProperties;
-        this.passwordResetProperties = passwordResetProperties;
     }
 
     @Transactional
@@ -146,36 +132,12 @@ public class AuthService {
     @Transactional
     public MessageResponse forgotPassword(ForgotPasswordRequest request) {
         String email = normalizeEmail(request.email());
-        userRepository.findByEmailIgnoreCase(email).ifPresent(user -> {
-            PasswordResetToken resetToken = new PasswordResetToken();
-            resetToken.setUser(user);
-            resetToken.setToken(UUID.randomUUID().toString());
-            resetToken.setExpiresAt(Instant.now().plusMillis(passwordResetProperties.expirationMs()));
-            resetToken.setUsed(false);
-            passwordResetTokenRepository.save(resetToken);
 
-            log.info("Password reset token for {}: {}", email, resetToken.getToken());
-        });
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new NotFoundException("No account found with this email address."));
 
-        return new MessageResponse("If an account exists, a reset link has been sent.");
-    }
-
-    @Transactional
-    public MessageResponse resetPassword(ResetPasswordRequest request) {
-        PasswordResetToken resetToken = passwordResetTokenRepository
-                .findByTokenAndUsedFalse(request.token())
-                .orElseThrow(() -> new BadRequestException("Invalid or expired reset token."));
-
-        if (resetToken.getExpiresAt().isBefore(Instant.now())) {
-            throw new BadRequestException("Invalid or expired reset token.");
-        }
-
-        User user = resetToken.getUser();
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
-        resetToken.setUsed(true);
-
         userRepository.save(user);
-        passwordResetTokenRepository.save(resetToken);
         refreshTokenRepository.revokeAllByUser(user);
 
         return new MessageResponse("Password updated successfully.");

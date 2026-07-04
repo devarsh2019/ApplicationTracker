@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 
+import { ForgotPassword } from './components/forgot-password/forgot-password';
 import { Login } from './components/login/login';
 import { Register } from './components/register/register';
 import { guestGuard } from './guards/auth.guard';
@@ -21,5 +22,11 @@ export const authRoutes: Routes = [
     component: Register,
     canActivate: [guestGuard],
     title: 'Create account · Application Tracker',
+  },
+  {
+    path: 'forgot-password',
+    component: ForgotPassword,
+    canActivate: [guestGuard],
+    title: 'Forgot password · Application Tracker',
   },
 ];
