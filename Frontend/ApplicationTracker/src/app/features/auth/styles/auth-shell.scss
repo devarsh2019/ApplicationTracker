@@ -4,6 +4,7 @@
 }
 
 .auth-page {
+  position: relative;
   display: grid;
   min-height: 100dvh;
   grid-template-columns: 1fr;
@@ -11,6 +12,13 @@
   @media (min-width: 960px) {
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   }
+}
+
+.auth-theme-toggle {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
 }
 
 .auth-hero {
@@ -123,20 +131,17 @@
   justify-content: center;
   padding: clamp(1.5rem, 4vw, 3rem);
   background:
-    radial-gradient(circle at top, rgba(67, 56, 202, 0.08), transparent 32%),
-    var(--mat-sys-surface, #f8fafc);
+    radial-gradient(circle at top, color-mix(in srgb, var(--mat-sys-primary) 8%, transparent), transparent 32%),
+    var(--mat-sys-surface);
 }
 
 .auth-card {
   width: min(100%, 26rem);
   padding: clamp(1.75rem, 4vw, 2.5rem);
-  border: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant, #cbd5e1) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 70%, transparent);
   border-radius: 1.5rem;
-  background: color-mix(in srgb, var(--mat-sys-surface-container-lowest, #ffffff) 92%, transparent);
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 18px 48px rgba(15, 23, 42, 0.08);
-  backdrop-filter: blur(12px);
+  background: var(--mat-sys-surface-container-lowest);
+  box-shadow: 0 8px 32px color-mix(in srgb, var(--mat-sys-shadow) 12%, transparent);
 }
 
 .auth-card--wide {

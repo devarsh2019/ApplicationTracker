@@ -1,0 +1,192 @@
+<section class="app-page dashboard">
+  <app-app-nav />
+
+  @if (actionError()) {
+    <p class="app-error" role="alert">{{ actionError() }}</p>
+  }
+
+  <div class="dashboard__controls">
+    <div class="dashboard__controls-left">
+      <div class="dashboard__stat">
+        <span class="dashboard__stat-value">{{ filteredCount() }}</span>
+        <span class="dashboard__stat-label">
+          @if (isDateFilterActive()) {
+            on {{ selectedDate() | date: 'MMM d' }}
+          } @else {
+            total
+          }
+        </span>
+      </div>
+      <button mat-flat-button color="primary" type="button" (click)="openCreateDialog()">
+        <mat-icon>add</mat-icon>
+        Add
+      </button>
+    </div>
+
+    @if (isDateFilterActive()) {
+      <div class="dashboard__date-stepper" aria-label="Browse applications by date">
+        <button
+          mat-icon-button
+          type="button"
+          aria-label="Previous day"
+          matTooltip="Previous day"
+          (click)="goToPreviousDate()"
+        >
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+
+        <button type="button" class="dashboard__date-pill" aria-label="Open calendar" (click)="navPicker.open()">
+          <mat-icon>calendar_today</mat-icon>
+          <span>{{ selectedDate() | date: 'mediumDate' }}</span>
+          <span class="dashboard__date-count">{{ countForDate(selectedDate()) }}</span>
+        </button>
+
+        <input
+          class="dashboard__date-input-hidden"
+          matInput
+          [matDatepicker]="navPicker"
+          [formControl]="dateControl"
+          (dateChange)="onDatePicked($event)"
+        />
+        <mat-datepicker #navPicker />
+
+        <button
+          mat-icon-button
+          type="button"
+          aria-label="Next day"
+          matTooltip="Next day"
+          (click)="goToNextDate()"
+        >
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    }
+
+    <div class="dashboard__controls-right">
+      <button mat-button type="button" [disabled]="isTodaySelected()" (click)="goToToday()">Today</button>
+      <button mat-button type="button" [disabled]="!isDateFilterActive()" (click)="showAllDates()">All</button>
+    </div>
+  </div>
+
+  @if (dailyCounts().length > 0) {
+    <div class="dashboard__quick-jump" aria-label="Quick jump dates">
+      @for (row of dailyCounts(); track row.appliedDate) {
+        <button
+          type="button"
+          class="dashboard__jump-chip"
+          [class.is-active]="selectedDate() === row.appliedDate"
+          (click)="selectDate(row.appliedDate)"
+        >
+          {{ row.appliedDate | date: 'MMM d' }} · {{ row.count }}
+        </button>
+      }
+    </div>
+  }
+
+  <section class="dashboard__table-card">
+    @if (isLoading()) {
+      <div class="app-loading">
+        <mat-spinner diameter="36" />
+      </div>
+    } @else if (totalApplications() === 0) {
+      <div class="app-empty">
+        <mat-icon>work_outline</mat-icon>
+        <p>No applications yet</p>
+        <button mat-flat-button color="primary" type="button" (click)="openCreateDialog()">Add application</button>
+      </div>
+    } @else if (isDateFilterActive() && applications().length === 0) {
+      <div class="app-empty">
+        <mat-icon>event_busy</mat-icon>
+        <p>No applications on {{ selectedDate() | date: 'mediumDate' }}</p>
+        <button mat-flat-button color="primary" type="button" (click)="openCreateDialog()">Add for this date</button>
+      </div>
+    } @else {
+      <div class="dashboard__table-wrap">
+        <table mat-table [dataSource]="applications()" class="dashboard__table">
+          <ng-container matColumnDef="companyName">
+            <th mat-header-cell *matHeaderCellDef>Company</th>
+            <td mat-cell *matCellDef="let row">{{ row.companyName }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="appliedDate">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let row">{{ row.appliedDate | date: 'MMM d, y' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="app-status" [class]="'app-status--' + row.status.toLowerCase()">
+                {{ statusLabel(row.status) }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="dateCount">
+            <th mat-header-cell *matHeaderCellDef>Day total</th>
+            <td mat-cell *matCellDef="let row">{{ countForDate(row.appliedDate) }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="companyLink">
+            <th mat-header-cell *matHeaderCellDef>Link</th>
+            <td mat-cell *matCellDef="let row">
+              @if (row.companyLink) {
+                <button mat-icon-button type="button" aria-label="Open link" (click)="openCompanyLink(row.companyLink)">
+                  <mat-icon>open_in_new</mat-icon>
+                </button>
+              } @else {
+                <span class="dashboard__muted">—</span>
+              }
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="contactFollowUp">
+            <th mat-header-cell *matHeaderCellDef>Contact</th>
+            <td mat-cell *matCellDef="let row">
+              @if (row.contactFollowUp) {
+                <span class="dashboard__cell-text" [matTooltip]="row.contactFollowUp">{{ row.contactFollowUp }}</span>
+              } @else {
+                <span class="dashboard__muted">—</span>
+              }
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="notes">
+            <th mat-header-cell *matHeaderCellDef>Notes</th>
+            <td mat-cell *matCellDef="let row">
+              @if (row.notes) {
+                <span class="dashboard__cell-text" [matTooltip]="row.notes">{{ row.notes }}</span>
+              } @else {
+                <span class="dashboard__muted">—</span>
+              }
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let row">
+              <button mat-icon-button type="button" aria-label="Edit" (click)="openEditDialog(row)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button type="button" aria-label="Delete" (click)="deleteApplication(row)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="visibleColumns()"></tr>
+          <tr mat-row *matRowDef="let row; columns: visibleColumns()"></tr>
+        </table>
+      </div>
+
+      <mat-paginator
+        [length]="totalElements()"
+        [pageIndex]="pageIndex()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onPageChange($event)"
+        aria-label="Application pages"
+      />
+    }
+  </section>
+</section>

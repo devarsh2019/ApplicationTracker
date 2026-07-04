@@ -14,6 +14,7 @@ import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthService } from '../../services/auth.service';
+import { ThemeToggle } from '../../../shared/components/theme-toggle/theme-toggle';
 
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   const password = control.get('newPassword')?.value;
@@ -30,6 +31,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   selector: 'app-forgot-password',
   imports: [
     ReactiveFormsModule,
+    ThemeToggle,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,

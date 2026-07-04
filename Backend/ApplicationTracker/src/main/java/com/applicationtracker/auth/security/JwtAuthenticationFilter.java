@@ -18,11 +18,9 @@ import java.util.UUID;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final CustomUserDetailsService userDetailsService;
 
-    public JwtAuthenticationFilter(JwtService jwtService, CustomUserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(JwtService jwtService) {
         this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -42,7 +40,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (SecurityContextHolder.getContext().getAuthentication() == null && jwtService.isTokenValid(token)) {
             UUID userId = jwtService.extractUserId(token);
-            AuthenticatedUser userDetails = userDetailsService.loadUserById(userId);
+            String email = jwtService.extractEmail(token);
+            AuthenticatedUser userDetails = new AuthenticatedUser(userId, email, "", true);
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     userDetails,

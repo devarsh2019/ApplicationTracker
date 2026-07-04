@@ -9,11 +9,13 @@ import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthService } from '../../services/auth.service';
+import { ThemeToggle } from '../../../shared/components/theme-toggle/theme-toggle';
 
 @Component({
   selector: 'app-login',
   imports: [
     ReactiveFormsModule,
+    ThemeToggle,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,

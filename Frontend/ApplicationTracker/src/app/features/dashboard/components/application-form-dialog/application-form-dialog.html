@@ -1,0 +1,64 @@
+<h2 mat-dialog-title>{{ title }}</h2>
+
+<mat-dialog-content>
+  <form class="application-form" [formGroup]="form" (ngSubmit)="submit()">
+    <mat-form-field appearance="outline">
+      <mat-label>Company name</mat-label>
+      <input matInput formControlName="companyName" placeholder="Paste company name" autocomplete="organization" />
+      @if (form.controls.companyName.hasError('required') && form.controls.companyName.touched) {
+        <mat-error>Company name is required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Applied date</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="appliedDate" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker" />
+      <mat-datepicker #picker />
+      @if (form.controls.appliedDate.hasError('required') && form.controls.appliedDate.touched) {
+        <mat-error>Applied date is required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Company link</mat-label>
+      <input matInput formControlName="companyLink" placeholder="https://careers.example.com" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        @for (option of statusOptions; track option.value) {
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Contact / follow-up</mat-label>
+      <textarea
+        matInput
+        rows="3"
+        formControlName="contactFollowUp"
+        placeholder="HR email, recruiter name, follow-up contact"
+      ></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Notes</mat-label>
+      <textarea
+        matInput
+        rows="3"
+        formControlName="notes"
+        placeholder="Interview feedback, reminders, or other notes"
+      ></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancel()">Cancel</button>
+  <button mat-flat-button type="button" color="primary" (click)="submit()">
+    {{ data.mode === 'create' ? 'Add' : 'Save' }}
+  </button>
+</mat-dialog-actions>
