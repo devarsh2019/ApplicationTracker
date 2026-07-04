@@ -20,6 +20,12 @@ export const routes: Routes = [
     title: 'Analytics · Application Tracker',
   },
   {
+    path: 'calendar',
+    loadComponent: () => import('./features/calendar/calendar').then((m) => m.CalendarPage),
+    canActivate: [authGuard],
+    title: 'Calendar · Application Tracker',
+  },
+  {
     path: '',
     redirectTo: 'auth/login',
     pathMatch: 'full',
