@@ -6,6 +6,7 @@ Thumbs.db
 .cursor/
 AGENTS.md
 DEPLOYMENT.md
+scripts/render-env.example.txt
 
 # Environment secrets
 .env
